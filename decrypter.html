@@ -1,0 +1,97 @@
+<html>
+<head>
+  <title>Base64 の複合化</title>
+  <meta name="description" content="Base64 形式の文字列を暗号化するサイトです。"/>
+  <style>
+        #progressContainer {
+            width: 100%;
+            background-color: #ddd;
+            margin-top: 10px;
+        }
+        #progressBar {
+            width: 0%;
+            height: 30px;
+            background-color: #4CAF50;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+        }
+
+  </style>
+</head>
+<body>
+  <textarea id="textbox1" rows="20" cols="150"></textarea></br></br>
+  暗号化キー：<textarea id="textbox2" rows="1" cols="30"></textarea></br>
+  <div id="progressContainer">
+    <div id="progressBar">0%</div>
+  </div></br>
+  <button type="button" id="btn" onclick="Func1()">複合化する</button></br>
+  <textarea id="textbox3" rows="20" cols="150" readonly></textarea>
+  <script>
+    
+    async function Func1() {
+      const textarea2 = document.getElementById("textbox2");
+      const rootBase64String = document.getElementById("textbox1").value;
+
+      let thinking = Func2(textarea2.value);
+
+      let create = "" + rootBase64String.charAt(0);
+
+      for (let i = 1; i < rootBase64String.length; i++)
+      {
+        if (rootBase64String.charAt(i) == '=')
+        {
+          create += "=";
+          continue;
+        }
+
+        let index = thinking.indexOf("" + rootBase64String.charAt(i)) - thinking.indexOf("" + rootBase64String.charAt(i - 1));
+
+        if (index < 0)
+        {
+          index += thinking.length;
+        }
+
+        create += "" + thinking.charAt(index);
+
+        if(i % 100 == 0) {
+          progressBar.style.width = (i / rootBase64String.length * 100) + '%';
+          progressBar.textContent = (i / rootBase64String.length * 100) + '%';
+          const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+          await sleep(0);
+        }
+      }
+      progressBar.style.width = 100 + '%';
+      progressBar.textContent = 100 + '%';
+
+      document.getElementById("textbox3").value = create;
+    }
+
+    function Func2(myKey) {
+      let thinking = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+      let nowCulc = 1;
+
+      for(let i = 0; i < myKey.length; i++) {
+        nowCulc *= myKey.charCodeAt(i);
+        nowCulc += 17321;
+        nowCulc = nowCulc % 23424423159;
+      }
+
+      for (let i = 0; i < 20000; i++)
+      {
+        const target1 = Math.abs(nowCulc % 64);
+        nowCulc *= 63;
+        nowCulc += 15731;
+        const target2 = Math.abs(nowCulc % 64);
+        nowCulc *= 61;
+        nowCulc += 34721;
+        nowCulc = nowCulc % 23498327429;
+        thinking = thinking.replaceAll("" + thinking.charAt(target2), "_").replaceAll("" + thinking.charAt(target1), "" + thinking.charAt(target2)).replaceAll("_", "" + thinking.charAt(target1));
+   　 }
+
+      return thinking;
+    }
+  </script>
+</body>
+</html>
